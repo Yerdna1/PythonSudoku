@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
-
 from digit_recognition import DigitRecognizer
 from image_processing import extract_digits, preprocess_image
 from sudoku_solver import solve_sudoku
