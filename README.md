@@ -9,12 +9,10 @@ python main.py path_to_image.jpg --debug
 
 #######################################
 # Basic usage
-python main.py data\sudoku_images\16.jpg
+python main.py data\sudoku_images\14.jpg
 
 # With custom confidence threshold
-python main.py data\sudoku_images\16.jpg --confidence 0.7
+python main.py data\sudoku_images\14.jpg --confidence 0.7
 
 # With debug visualizations
-python main.py data\sudoku_images\16.jpg --debug
-
-.\venv\Scripts\activate
+python main.py data\sudoku_images\14.jpg --debug
