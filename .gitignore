@@ -134,3 +134,10 @@ dmypy.json
 
 # Windows
 Thumbs.db
+myenv/
+sudoku_live_camera/android
+sudoku_live_camera/ios
+sudoku_live_camera/macos
+sudoku_live_camera/windows
+sudoku_live_camera/linux
+sudoku_live_camera/web

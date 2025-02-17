@@ -16,3 +16,5 @@ python main.py data\sudoku_images\16.jpg --confidence 0.7
 
 # With debug visualizations
 python main.py data\sudoku_images\16.jpg --debug
+
+.\venv\Scripts\activate

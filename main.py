@@ -1,13 +1,19 @@
 import cv2
 import numpy as np
 import tensorflow as tf
-import matplotlib.pyplot as plt
 from digit_recognition import DigitRecognizer
 from image_processing import extract_digits, preprocess_image
 from sudoku_solver import solve_sudoku
 from visualization import plot_digit_confidence, plot_sudoku_recognition, show_final_result, visualize_solution
+import matplotlib
+matplotlib.use('Agg')  # Use a non-interactive backend
 
-def main(image_path, confidence_threshold=0.8, debug=True):
+def main(image_path, confidence_threshold=0.8, debug=False,grid_callback=None):
+
+       # Disable pyplot interactive mode
+    import matplotlib.pyplot as plt
+    plt.ioff()  # Turn off interactive mode
+
     print(f"[DEBUG] Processing image: {image_path}")
     
     # Step 1: Initialize the digit recognizer
@@ -68,13 +74,16 @@ def main(image_path, confidence_threshold=0.8, debug=True):
     solution = solve_sudoku(sudoku_grid)
     
     if solution is not None:
+          # If a callback is provided, use it to return grids
+        if grid_callback:
+            grid_callback(original_grid, solution)
         print("\n[DEBUG] Solution found:")
         print_grid(solution)
         visualize_solution(original_grid, solution, confidence_grid)
 
          # Add projection visualization
         projected = show_final_result(original_img, warped, solution, 
-                                    transform_matrix, corners)
+                                    transform_matrix, corners,original_grid)
           # Optionally save the projected result
         result_path = image_path.rsplit('.', 1)[0] + '_solution.jpg'
         cv2.imwrite(result_path, projected)
@@ -83,6 +92,34 @@ def main(image_path, confidence_threshold=0.8, debug=True):
 
     else:
         print("[ERROR] Could not solve Sudoku")
+
+
+      # Instead of plt.show(), save figures if needed
+    if debug:
+            plt.figure()
+            plot_digit_confidence(confidence_grid, sudoku_grid)
+            plt.savefig('digit_confidence.png')
+            plt.close()
+
+            plt.figure()
+            plot_sudoku_recognition(sudoku_grid, confidence_grid, sudoku_grid, confidence_threshold)
+            plt.savefig('sudoku_recognition.png')
+            plt.close()
+
+            plt.figure()
+            visualize_solution(original_grid, solution, confidence_grid)
+            plt.savefig('solution_visualization.png')
+            plt.close()
+        
+        # If a callback is provided, use it to return grids
+    if grid_callback:
+            grid_callback(original_grid, solution)
+
+    return {
+            'original_grid': original_grid,
+            'solution': solution
+        }
+   
 
 def print_grid(grid):
     """Print the Sudoku grid in a readable format"""

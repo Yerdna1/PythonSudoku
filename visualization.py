@@ -301,11 +301,10 @@ def plot_sudoku_recognition(original_grid, confidence_grid, sudoku_grid, confide
     plt.show()    
 
 
-def project_solution_to_original(original_img, solution, transform_matrix, corners):
-    """Project the solution back onto the original image with error handling"""
+def project_solution_to_original(original_img, solution, original_grid, transform_matrix, corners):
+    """Project only the new solution numbers back onto the original image"""
     try:
         height, width = original_img.shape[:2]
-        print(f"[DEBUG] Processing image {width}x{height}")
         result = original_img.copy()
         
         if corners is None or len(corners) != 4:
@@ -315,14 +314,6 @@ def project_solution_to_original(original_img, solution, transform_matrix, corne
         # Get the exact coordinates of the grid corners
         corners = np.float32(corners).reshape(-1, 2)
         tl, tr, br, bl = corners
-        
-        # Verify corner coordinates
-        print("[DEBUG] Grid corners:")
-        for i, (x, y) in enumerate([tl, tr, br, bl]):
-            if not (0 <= x < width and 0 <= y < height):
-                print(f"[ERROR] Corner {i} ({x},{y}) outside image bounds")
-                return None
-            print(f"    Corner {i}: ({x:.1f}, {y:.1f})")
         
         # Calculate dimensions
         grid_width = max(
@@ -334,26 +325,27 @@ def project_solution_to_original(original_img, solution, transform_matrix, corne
             np.linalg.norm(br - tr)
         )
         
-        print(f"[DEBUG] Grid dimensions: {grid_width:.1f}x{grid_height:.1f}")
-        
         # Calculate cell dimensions
         cell_width = grid_width / 9.0
         cell_height = grid_height / 9.0
         
-        print(f"[DEBUG] Cell dimensions: {cell_width:.1f}x{cell_height:.1f}")
-        
         # Scale font size based on cell size
-        font_scale = min(cell_width, cell_height) / 40.0  # Adjusted divisor
-        thickness = max(2, int(min(cell_width, cell_height) / 15.0))  # Adjusted thickness
+        font_scale = min(cell_width, cell_height) / 40.0
+        thickness = max(2, int(min(cell_width, cell_height) / 15.0))
         font = cv2.FONT_HERSHEY_SIMPLEX
+                # Neon Green color (in BGR format)
+        NEON_GREEN = (0, 255, 0)  # Bright green
         
-        print(f"[DEBUG] Font settings: scale={font_scale:.1f}, thickness={thickness}")
+        # Fine-tuning offsets (adjust these as needed)
+        x_offset = cell_width * 0.5  # Move slightly right
+        y_offset = cell_height * 0.5  # Move slightly down
         
         # Draw numbers
         for i in range(9):
             for j in range(9):
-                if solution[i][j] != 0:
-                    # Calculate position
+                # Only draw numbers that were not in the original grid
+                if solution[i][j] != 0 and original_grid[i][j] == 0:
+                    # Calculate position with offsets
                     fx = j / 9.0
                     fy = i / 9.0
                     
@@ -362,54 +354,23 @@ def project_solution_to_original(original_img, solution, transform_matrix, corne
                     bottom = bl + (br - bl) * fx
                     pos = top + (bottom - top) * fy
                     
-                    x, y = int(pos[0]), int(pos[1])
+                    # Apply offsets
+                    x = int(pos[0] + x_offset)
+                    y = int(pos[1] + y_offset)
                     
                     if not (0 <= x < width and 0 <= y < height):
-                        print(f"[WARN] Position ({x},{y}) outside bounds for cell ({i},{j})")
                         continue
                     
                     number = str(solution[i][j])
                     text_size = cv2.getTextSize(number, font, font_scale, thickness)[0]
                     
-                    print(f"[DEBUG] Text position for cell ({i},{j}): ({x},{y})")
-                    #print(f"[DEBUG] Text size: {text_size}, Font scale: {font_scale}, Thickness: {thickness}")
-                    
                     # Center text
                     text_x = int(x - text_size[0]/2)
                     text_y = int(y + text_size[1]/2)
                     
-                    # Add background
-                    padding = int(min(cell_width, cell_height) * 0.2)  # Adjusted multiplier
-                    bg_pts = np.array([
-                        [text_x - padding, text_y - text_size[1] - padding],
-                        [text_x + text_size[0] + padding, text_y - text_size[1] - padding],
-                        [text_x + text_size[0] + padding, text_y + padding],
-                        [text_x - padding, text_y + padding]
-                    ], dtype=np.int32)
-                    
-                   # print(f"[DEBUG] Background padding: {padding}")
-                    
-                    # Draw semi-transparent background
-                  #  overlay = result.copy()
-                   # cv2.fillPoly(overlay, [bg_pts], (255, 255, 255))
-                  #  result = cv2.addWeighted(overlay, 0.9, result, 0.1, 0)
-                    
-                    # Draw number
-                        # Create a mask for the background
-                    mask = np.zeros((height, width), dtype=np.uint8)
-                    cv2.fillPoly(mask, [bg_pts], 255)
-                    
-                    # Create a transparent overlay
-                    overlay = np.zeros_like(result, dtype=np.uint8)
-                    cv2.fillPoly(overlay, [bg_pts], (255, 255, 255, 128))  # Semi-transparent white
-                    
-                    # Blend the overlay with the result
-                    alpha = 0.0  # Adjust transparency level (0 = fully transparent, 1 = fully opaque)
-                    result = cv2.addWeighted(result, 1, overlay, alpha, 0)
-                    
                     # Draw number
                     cv2.putText(result, number, (text_x, text_y), font, 
-                              font_scale, (0, 100, 0, 255), thickness)
+                              font_scale, NEON_GREEN, thickness)
         
         return result
         
@@ -418,38 +379,32 @@ def project_solution_to_original(original_img, solution, transform_matrix, corne
         return None
     
 
-def show_final_result(original_img, warped, solution, transform_matrix, corners):
+def show_final_result(original_img, warped, solution, transform_matrix, corners, original_grid):
     """Show original, warped, and solution projected back"""
     try:
         plt.figure(figsize=(14, 7))
-        
+       
         # Original image with grid corners
         plt.subplot(131)
         plt.title('Original Image')
         orig_rgb = cv2.cvtColor(original_img, cv2.COLOR_BGR2RGB)
         plt.imshow(orig_rgb)
-        
+       
         # Draw detected grid corners
         corners = np.float32(corners).reshape(-1, 2)
         for point in corners:
             plt.plot(point[0], point[1], 'ro')
         plt.axis('off')
-        
-        # Warped grid with solution
-       # plt.subplot(132)
-       # plt.title('Warped Grid with Solution')
-       # warped_rgb = cv2.cvtColor(warped, cv2.COLOR_GRAY2RGB)
-       # plt.imshow(warped_rgb)
-       # plot_grid(solution, title='', ax=plt.gca())
-       # plt.axis('off')
-        
+       
         # Project solution back
         plt.subplot(133)
         plt.title('Solution Projected on Original')
         try:
             print("[DEBUG] Projecting solution...")
             projected = project_solution_to_original(original_img.copy(), solution, 
-                                                  transform_matrix, corners)
+                                                     original_grid,  # Added original grid 
+                                                     transform_matrix, 
+                                                     corners)
             print("[DEBUG] Projection completed")
             if projected is not None:
                 plt.imshow(cv2.cvtColor(projected, cv2.COLOR_BGR2RGB))
@@ -459,13 +414,13 @@ def show_final_result(original_img, warped, solution, transform_matrix, corners)
         except Exception as e:
             print(f"[ERROR] Projection failed: {str(e)}")
             plt.imshow(orig_rgb)  # Show original if projection fails
-            
+           
         plt.axis('off')
         plt.tight_layout()
         plt.show()
-        
+       
         return projected if projected is not None else original_img
-        
+       
     except Exception as e:
         print(f"[ERROR] Visualization failed: {str(e)}")
         return original_img
