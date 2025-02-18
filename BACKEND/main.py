@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import tensorflow as tf
-from digit_recognition import DigitRecognizer
+from create_model_digit_recognition import DigitRecognizer
 from image_processing import extract_digits, preprocess_image
 from sudoku_solver import solve_sudoku
 from visualization import plot_digit_confidence, plot_sudoku_recognition, show_final_result, visualize_solution

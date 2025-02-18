@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 
 from image_processing import order_points
 
-
-
 def show_processing_steps(images_dict):
     """Display multiple processing steps in a single figure"""
     n_images = len(images_dict)

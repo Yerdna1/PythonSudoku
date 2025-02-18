@@ -194,15 +194,6 @@ def preprocess_image(image_path):
     return None, None, None, None
 
 
-
-
-
-
-
-
-
-
-
 def show_stages(stages, i, j):
     """Show processing stages for a cell"""
     n_stages = len(stages)
