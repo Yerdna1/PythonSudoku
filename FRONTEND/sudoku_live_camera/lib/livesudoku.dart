@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sudoku_live_camera/constant.dart';
 
 
 class LiveSudokuSolverPage extends ConsumerStatefulWidget {
@@ -32,7 +33,7 @@ class _LiveSudokuSolverPageState extends ConsumerState<LiveSudokuSolverPage> {
 
   // Add TextEditingController for the server URL
   late TextEditingController _urlController;
-  String serverUrl = 'http://192.168.0.109:5000/solve-sudoku';
+  String serverUrl = serverHetzner;
 
   @override
   void initState() {
@@ -46,7 +47,7 @@ class _LiveSudokuSolverPageState extends ConsumerState<LiveSudokuSolverPage> {
   Future<void> _loadSavedUrl() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      serverUrl = prefs.getString(URL_PREF_KEY) ?? 'http://192.168.0.109:5000/solve-sudoku';
+      serverUrl = prefs.getString(URL_PREF_KEY) ?? serverHetzner;
     });
   }
 
@@ -68,6 +69,8 @@ class _LiveSudokuSolverPageState extends ConsumerState<LiveSudokuSolverPage> {
 
   // Add method to show server configuration dialog
   // Updated server configuration dialog with validation
+
+  void _showNull() {}
   void _showServerConfig() {
     showDialog(
       context: context,
@@ -80,7 +83,7 @@ class _LiveSudokuSolverPageState extends ConsumerState<LiveSudokuSolverPage> {
               controller: _urlController,
               decoration: const InputDecoration(
                 labelText: 'Server URL',
-                hintText: 'http://192.168.0.109:5000/solve-sudoku',
+          //      hintText: serverHetzner,
                 border: OutlineInputBorder(),
                 helperText: 'Enter the full URL including protocol and port',
               ),
@@ -478,7 +481,8 @@ class _LiveSudokuSolverPageState extends ConsumerState<LiveSudokuSolverPage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: _showServerConfig,
+            onPressed: _showNull,
+            //_showServerConfig,
           ),
         ],
       ),
