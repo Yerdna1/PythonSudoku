@@ -5,9 +5,7 @@ opencv-python
 matplotlib
 scipy
 python-docx
-docx
-docx.shared
-python-docx
 flask
 flask-cors
+
 
