@@ -34,3 +34,21 @@ python app.py
 
 
  python main.py data\sudoku_images\12.jpg --debug
+
+#####################################################################################################################
+JE TO FULL STACK APLICKACIA
+1, backend: PYTHON 
+2, frontend: FLUTTER
+
+Aplikacia si vezme na vstupe obrazok z kamery alebo z obrazkov, je tu trenovanie Neuronovych sieti, a rozpoznavanie cislic z obrazku, alebo kamery, pouzije sa najlepsi model z danych natrenovanych
+Vysledkom je aj projekckia do povodneho obrazku
+
+Tehcnologie:
+
+PYTHON
+MATPLOTLIB
+TENSORFLOW
+OPENCV
+FLUTTER
+NEURAL NETWORKS
+PLOTLY
